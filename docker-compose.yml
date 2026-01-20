@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  go-app:
+    container_name: go-app
+    image: go-api-1
+    build: .
+    ports: 
+      - "8080:8080"
+    depends_on:
+    - go_db
+    networks:
+      - go_api_1
+  database:
+    image: postgres:latest
+    container_name: pg-go-api-1
+    restart: always
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - 5432:5432
+    networks:
+      - go_api_1
+    volumes:
+      - database_data:/var/lib/postgresql/data
+
+networks:
+  go_api_1:
+    driver: bridge
+
+volumes:
+  database_data:
