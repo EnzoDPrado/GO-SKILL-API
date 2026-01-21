@@ -2,7 +2,7 @@ package user
 
 import (
 	"rest-api/internal/dtos/user"
-	"rest-api/internal/repositories"
+	"rest-api/internal/infra/repositories"
 )
 
 type GetAllUsersUseCase struct {

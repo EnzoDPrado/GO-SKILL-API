@@ -3,7 +3,7 @@ package user
 import (
 	"rest-api/internal/domain"
 	"rest-api/internal/dtos/user"
-	"rest-api/internal/repositories"
+	"rest-api/internal/infra/repositories"
 
 	"github.com/google/uuid"
 )
