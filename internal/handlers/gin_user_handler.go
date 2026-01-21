@@ -6,6 +6,7 @@ import (
 	userDto "rest-api/internal/dtos/user"
 	userUseCase "rest-api/internal/usecases/user"
 
+	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,14 +29,20 @@ func (h *GinUserHandler) CreateUser(ctx *gin.Context) {
 	var request user.CreateUserRequest
 
 	if err := ctx.BindJSON(&request); err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	valid, err := govalidator.ValidateStruct(request)
+	if !valid || err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	createdUser, err := h.CreateUserUseCase.Execute(request)
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -46,7 +53,7 @@ func (h *GinUserHandler) GetAllUsers(ctx *gin.Context) {
 	users, err := h.GetAllUsersUseCase.Execute()
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 

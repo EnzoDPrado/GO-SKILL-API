@@ -4,8 +4,6 @@ import (
 	"rest-api/internal/domain"
 	"rest-api/internal/dtos/user"
 	"rest-api/internal/infra/repositories"
-
-	"github.com/google/uuid"
 )
 
 type CreateUserUseCase struct {
@@ -20,9 +18,14 @@ func NewCreateUserUseCase(userRepository repositories.UserRepository) *CreateUse
 
 func (self *CreateUserUseCase) Execute(createUserRequest user.CreateUserRequest) (*domain.User, error) {
 
-	userEntity := domain.User{
-		ID:   uuid.New(),
-		Name: createUserRequest.Name,
+	userEntity, err := domain.NewUser(
+		createUserRequest.Name,
+		createUserRequest.Email,
+		createUserRequest.Password,
+	)
+
+	if err != nil {
+		return nil, err
 	}
 
 	user, err := self.UserRepository.Add(userEntity)
@@ -31,5 +34,5 @@ func (self *CreateUserUseCase) Execute(createUserRequest user.CreateUserRequest)
 		return nil, err
 	}
 
-	return &user, nil
+	return user, nil
 }

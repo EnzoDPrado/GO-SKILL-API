@@ -2,7 +2,7 @@ package main
 
 import (
 	"rest-api/internal/handlers"
-	"rest-api/internal/repositories"
+	"rest-api/internal/infra/repositories"
 	"rest-api/internal/usecases/user"
 
 	"github.com/gin-gonic/gin"
@@ -12,7 +12,6 @@ func main() {
 	server := gin.Default()
 	generateGinUserHandler().RegisterRoutes(server)
 
-	
 	server.Run(":8080")
 }
 

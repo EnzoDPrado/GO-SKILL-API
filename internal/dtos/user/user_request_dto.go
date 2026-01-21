@@ -1,5 +1,7 @@
 package user
 
 type CreateUserRequest struct {
-	Name string `json: "name" validate:"required"`
+	Name     string `valid:"required,alpha,length(2|50)"`
+	Email    string `valid:"required,email"`
+	Password string `valid:"required,length(6|125)"`
 }
