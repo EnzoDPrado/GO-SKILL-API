@@ -1,63 +1,55 @@
 package database
 
 import (
-	"log"
+	"fmt"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/driver/postgres"
+
+	"gorm.io/gorm"
 )
 
 type Connection struct {
-	Db            *gorm.DB
-	Dsn           string
-	DsnTest       string
-	DbType        string
-	DbTypeTest    string
-	Debug         bool
-	AutoMigrateDb bool
-	Env           string
+	Db       *gorm.DB
+	host     string
+	port     string
+	user     string
+	password string
+	dbname   string
 }
 
-func NewConnection() *Connection {
-	return &Connection{}
-}
-
-func NewConnectionTest() *gorm.DB {
-	dbInstance := NewConnection()
-	dbInstance.Env = "test"
-	dbInstance.DbTypeTest = "sqlite3"
-	dbInstance.DsnTest = ":memory:"
-	dbInstance.AutoMigrateDb = true
-	dbInstance.Debug = true
-
-	connection, err := dbInstance.Connect()
-
-	if err != nil {
-		log.Fatalf("Test db error: %v", err)
+func NewConnection(
+	host string,
+	port string,
+	user string,
+	password string,
+	dbname string,
+) *Connection {
+	return &Connection{
+		host:     host,
+		port:     port,
+		user:     user,
+		password: password,
+		dbname:   dbname,
 	}
-
-	return connection
 }
 
-func (d *Connection) Connect() (*gorm.DB, error) {
+func (c *Connection) Connect() (*gorm.DB, error) {
 	var err error
 
-	if d.Env != "test" {
-		d.Db, err = gorm.Open(d.DbType, d.Dsn)
-	} else {
-		d.Db, err = gorm.Open(d.DbTypeTest, d.DsnTest)
-	}
+	db, err := gorm.Open(postgres.Open(c.makeDsn()), &gorm.Config{})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if d.Debug {
-		d.Db.LogMode(true)
-	}
+	c.Db = db
 
-	if d.AutoMigrateDb {
+	return db, nil
+}
 
-	}
+func (c *Connection) makeDsn() string {
+	return fmt.Sprintf("host=%s port=%d user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		c.host, c.port, c.user, c.password, c.dbname)
 
-	return d.Db, nil
 }
