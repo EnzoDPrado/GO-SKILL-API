@@ -1,6 +1,10 @@
 package repositories
 
-import "rest-api/internal/domain"
+import (
+	"rest-api/internal/domain"
+
+	"gorm.io/gorm"
+)
 
 type UserRepository interface {
 	GetAll() ([]*domain.User, error)
@@ -8,7 +12,7 @@ type UserRepository interface {
 }
 
 type UserRepositoryDb struct {
-	users []*domain.User
+	Db *gorm.DB
 }
 
 func New() *UserRepositoryDb {
@@ -16,11 +20,23 @@ func New() *UserRepositoryDb {
 }
 
 func (ur *UserRepositoryDb) GetAll() ([]*domain.User, error) {
-	return ur.users, nil
+	var users []*domain.User
+
+	err := ur.Db.Find(&users).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }
 
 func (ur *UserRepositoryDb) Add(newUser *domain.User) (*domain.User, error) {
-	ur.users = append(ur.users, newUser)
+	err := ur.Db.Create(&newUser).Error
+
+	if err != nil {
+		return nil, err
+	}
 
 	return newUser, nil
 }

@@ -11,7 +11,7 @@ import (
 type Connection struct {
 	Db       *gorm.DB
 	host     string
-	port     string
+	port     int64
 	user     string
 	password string
 	dbname   string
@@ -19,7 +19,7 @@ type Connection struct {
 
 func NewConnection(
 	host string,
-	port string,
+	port int64,
 	user string,
 	password string,
 	dbname string,
