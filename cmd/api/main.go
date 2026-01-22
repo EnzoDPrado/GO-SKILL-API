@@ -23,6 +23,10 @@ func init() {
 
 	dp, err := strconv.ParseInt(os.Getenv("DB_PORT"), 10, 64)
 
+	if err != nil {
+		log.Fatalf("Error converting DB_PORT environment variable")
+	}
+
 	dbConnection = database.NewConnection(
 		os.Getenv("DB_HOST"),
 		dp,
