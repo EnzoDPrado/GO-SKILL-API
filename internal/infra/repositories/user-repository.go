@@ -8,6 +8,7 @@ import (
 
 type UserRepository interface {
 	GetAll() ([]*domain.User, error)
+	GetByEmail(email string) (*domain.User, error)
 	Add(newUser *domain.User) (*domain.User, error)
 	ExistsByEmail(email string) (bool, error)
 }
@@ -30,6 +31,18 @@ func (ur *UserRepositoryDb) GetAll() ([]*domain.User, error) {
 	}
 
 	return users, nil
+}
+
+func (ur *UserRepositoryDb) GetByEmail(email string) (*domain.User, error) {
+	var user *domain.User
+
+	result := ur.Db.Where("email = ?", email).Find(&user)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return user, nil
 }
 
 func (ur *UserRepositoryDb) ExistsByEmail(email string) (bool, error) {

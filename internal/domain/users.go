@@ -5,6 +5,7 @@ import (
 
 	"github.com/asaskevich/govalidator"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserRole string
@@ -30,19 +31,31 @@ func NewUser(name string, email string, password string) (*User, error) {
 		Password: password,
 	}
 
-	user.prepare()
+	if err := user.prepare(); err != nil {
+		return nil, err
+	}
 
-	if error := user.validate(); error != nil {
-		return nil, error
+	if err := user.validate(); err != nil {
+		return nil, err
 	}
 
 	return &user, nil
 }
 
-func (user *User) prepare() {
+func (user *User) prepare() error {
 	user.ID = uuid.New()
 	user.Status = true
 	user.Role = GUEST
+
+	encryptedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), 14)
+
+	if err != nil {
+		return err
+	}
+
+	user.Password = string(encryptedPassword)
+
+	return nil
 }
 
 func (user *User) validate() error {
