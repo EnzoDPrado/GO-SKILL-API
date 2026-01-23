@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/asaskevich/govalidator"
@@ -40,6 +41,16 @@ func NewUser(name string, email string, password string) (*User, error) {
 	}
 
 	return &user, nil
+}
+
+func (user *User) Auth(password string) error {
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+
+	if err != nil {
+		return fmt.Errorf("invalid credentials")
+	}
+
+	return nil
 }
 
 func (user *User) prepare() error {

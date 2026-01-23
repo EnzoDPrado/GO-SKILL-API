@@ -6,6 +6,8 @@ import (
 	"rest-api/internal/handlers"
 	"rest-api/internal/infra/database"
 	"rest-api/internal/infra/repositories"
+	"rest-api/internal/infra/services"
+	"rest-api/internal/usecases/auth"
 	"rest-api/internal/usecases/user"
 	"strconv"
 
@@ -14,13 +16,35 @@ import (
 )
 
 var dbConnection *database.Connection
+var jwtService *services.JwtService
 
 func init() {
+	loadEnv()
+	connectDatabase()
+	loadJwtService()
+}
+
+func main() {
+	server := gin.Default()
+	generateGinUserHandler().RegisterUserRoutes(server)
+	generateGinAuthHandler().RegisterAuthRoutes(server)
+
+	server.Run(":8080")
+}
+
+func loadJwtService() {
+	jwtService = services.NewJwtService(os.Getenv("JWT_SECRET_KEY"))
+}
+
+func loadEnv() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatalf("Error loading .env file")
 	}
 
+}
+
+func connectDatabase() {
 	dp, err := strconv.ParseInt(os.Getenv("DB_PORT"), 10, 64)
 
 	if err != nil {
@@ -39,14 +63,6 @@ func init() {
 	if err != nil {
 		log.Fatalf("Error connecting on database")
 	}
-
-}
-
-func main() {
-	server := gin.Default()
-	generateGinUserHandler().RegisterRoutes(server)
-
-	server.Run(":8080")
 }
 
 func generateGinUserHandler() *handlers.GinUserHandler {
@@ -56,4 +72,12 @@ func generateGinUserHandler() *handlers.GinUserHandler {
 	getAllUsersUseCase := user.NewGetAllUsersUseCase(userRepository)
 
 	return handlers.NewGinUserHandler(createUserUseCase, getAllUsersUseCase)
+}
+
+func generateGinAuthHandler() *handlers.GinAuth {
+	userRepository := repositories.UserRepositoryDb{Db: dbConnection.Db}
+
+	loginUseCase := auth.NewLoginUseCase(userRepository, jwtService)
+
+	return handlers.NewGinAuth(*loginUseCase)
 }
