@@ -12,12 +12,12 @@ import (
 )
 
 type GinAuth struct {
-	LoginUseCase authUseCase.LoginUseCase
+	LoginUseCase *authUseCase.LoginUseCase
 	JwtService   *JwtService.JwtService
 }
 
 func NewGinAuth(
-	loginUseCase authUseCase.LoginUseCase,
+	loginUseCase *authUseCase.LoginUseCase,
 ) *GinAuth {
 	return &GinAuth{
 		LoginUseCase: loginUseCase,
@@ -45,12 +45,5 @@ func (g *GinAuth) Login(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, token)
-}
-
-func (g *GinAuth) RegisterAuthRoutes(router *gin.Engine) {
-	v1 := router.Group("/api/v1/auth")
-	{
-		v1.POST("/", g.Login)
-	}
+	ctx.JSON(http.StatusOK, token)
 }

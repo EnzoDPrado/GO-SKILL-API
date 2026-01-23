@@ -8,11 +8,11 @@ import (
 )
 
 type LoginUseCase struct {
-	UserRepository repositories.UserRepositoryDb
+	UserRepository *repositories.UserRepositoryDb
 	JwtService     *services.JwtService
 }
 
-func NewLoginUseCase(userRepository repositories.UserRepositoryDb, jwtService *services.JwtService) *LoginUseCase {
+func NewLoginUseCase(userRepository *repositories.UserRepositoryDb, jwtService *services.JwtService) *LoginUseCase {
 	return &LoginUseCase{
 		UserRepository: userRepository,
 		JwtService:     jwtService,

@@ -5,18 +5,15 @@ import (
 	"os"
 	"rest-api/internal/handlers"
 	"rest-api/internal/infra/database"
-	"rest-api/internal/infra/repositories"
 	"rest-api/internal/infra/services"
-	"rest-api/internal/usecases/auth"
-	"rest-api/internal/usecases/user"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
-var dbConnection *database.Connection
-var jwtService *services.JwtService
+var dbC *database.Connection
+var jwtSvc *services.JwtService
 
 func init() {
 	loadEnv()
@@ -26,14 +23,14 @@ func init() {
 
 func main() {
 	server := gin.Default()
-	generateGinUserHandler().RegisterUserRoutes(server)
-	generateGinAuthHandler().RegisterAuthRoutes(server)
+
+	handlers.RegisterRoutes(server, dbC.Db, jwtSvc)
 
 	server.Run(":8080")
 }
 
 func loadJwtService() {
-	jwtService = services.NewJwtService(os.Getenv("JWT_SECRET_KEY"))
+	jwtSvc = services.NewJwtService(os.Getenv("JWT_SECRET_KEY"))
 }
 
 func loadEnv() {
@@ -51,7 +48,7 @@ func connectDatabase() {
 		log.Fatalf("Error converting DB_PORT environment variable")
 	}
 
-	dbConnection = database.NewConnection(
+	dbC = database.NewConnection(
 		os.Getenv("DB_HOST"),
 		dp,
 		os.Getenv("DB_USER"),
@@ -59,25 +56,8 @@ func connectDatabase() {
 		os.Getenv("DB_NAME"),
 	)
 
-	_, err = dbConnection.Connect()
+	_, err = dbC.Connect()
 	if err != nil {
 		log.Fatalf("Error connecting on database")
 	}
-}
-
-func generateGinUserHandler() *handlers.GinUserHandler {
-	userRepository := &repositories.UserRepositoryDb{Db: dbConnection.Db}
-
-	createUserUseCase := user.NewCreateUserUseCase(userRepository)
-	getAllUsersUseCase := user.NewGetAllUsersUseCase(userRepository)
-
-	return handlers.NewGinUserHandler(createUserUseCase, getAllUsersUseCase)
-}
-
-func generateGinAuthHandler() *handlers.GinAuth {
-	userRepository := repositories.UserRepositoryDb{Db: dbConnection.Db}
-
-	loginUseCase := auth.NewLoginUseCase(userRepository, jwtService)
-
-	return handlers.NewGinAuth(*loginUseCase)
 }

@@ -59,11 +59,3 @@ func (h *GinUserHandler) GetAllUsers(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, users)
 }
-
-func (h *GinUserHandler) RegisterUserRoutes(router *gin.Engine) {
-	v1 := router.Group("/api/v1/users")
-	{
-		v1.POST("/", h.CreateUser)
-		v1.GET("/", h.GetAllUsers)
-	}
-}
