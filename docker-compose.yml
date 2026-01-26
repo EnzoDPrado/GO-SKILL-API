@@ -3,31 +3,35 @@ version: "3.8"
 services:
   go-app:
     container_name: go-app
-    image: go-api-1
     build: .
+    env_file:
+      - .env
     ports: 
-      - "8080:8080"
+      - "${SERVER_PORT}:${SERVER_PORT}"
+    environment:
+      - DB_HOST=database 
     depends_on:
-    - go_db
+      - database
     networks:
-      - go_api_1
+      - go_api_network
+
   database:
     image: postgres:latest
     container_name: pg-go-api-1
     restart: always
     environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 1234
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
     ports:
-      - 5432:5432
+      - "${DB_PORT}:5432"
     networks:
-      - go_api_1
+      - go_api_network
     volumes:
       - database_data:/var/lib/postgresql/data
 
 networks:
-  go_api_1:
+  go_api_network:
     driver: bridge
 
 volumes:

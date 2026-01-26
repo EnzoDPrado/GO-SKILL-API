@@ -35,7 +35,10 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, jwt *services.JwtService) {
 		users := api.Group("/users")
 		{
 			users.POST("", userHandler.CreateUser)
-			users.GET("", userHandler.GetAllUsers)
+			users.GET("",
+				middlewares.AuthMiddleware(jwt),
+				userHandler.GetAllUsers,
+			)
 			users.PATCH("/:id/role",
 				middlewares.AuthMiddleware(jwt),
 				middlewares.RoleMiddleware(domain.ADMIN),

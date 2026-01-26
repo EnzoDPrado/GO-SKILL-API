@@ -16,7 +16,7 @@ var dbC *database.Connection
 var jwtSvc *services.JwtService
 
 func init() {
-	loadEnv()
+	_ = godotenv.Load()
 	connectDatabase()
 	loadJwtService()
 }
@@ -35,14 +35,6 @@ func main() {
 
 func loadJwtService() {
 	jwtSvc = services.NewJwtService(os.Getenv("JWT_SECRET_KEY"))
-}
-
-func loadEnv() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error loading .env file")
-	}
-
 }
 
 func connectDatabase() {

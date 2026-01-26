@@ -18,12 +18,12 @@ const (
 )
 
 type User struct {
-	ID       uuid.UUID `gorm:"type:uuid;primaryKey;not null"`
-	Name     string    `valid:"required,alpha,length(2|50)" gorm:"not null"`
-	Email    string    `valid:"required,email" gorm:"uniqueIndex;not null"`
-	Password string    `valid:"required,length(6|125)" gorm:"not null"`
-	Status   bool      `valid:"required" gorm:"not null"`
-	Role     UserRole  `valid:"required,length(0|55)" gorm:"not null"`
+	ID       uuid.UUID `gorm:"type:uuid;primaryKey"`
+	Name     string    `valid:"required,alpha,length(2|50)" gorm:"type:varchar(155);not null"`
+	Email    string    `valid:"required,email" gorm:"type:varchar(255);unique;not null"`
+	Password string    `valid:"required,length(6|125)" gorm:"type:varchar(255);not null"`
+	Status   bool      `valid:"required" gorm:"default:true;not null"`
+	Role     UserRole  `valid:"required,length(0|55)" gorm:"type:varchar(55);not null"`
 }
 
 func CastUserRole(role string) (UserRole, error) {

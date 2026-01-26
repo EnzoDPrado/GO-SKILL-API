@@ -2,6 +2,8 @@ package database
 
 import (
 	"fmt"
+	"log"
+	"rest-api/internal/domain"
 
 	"gorm.io/driver/postgres"
 
@@ -43,6 +45,11 @@ func (c *Connection) Connect() (*gorm.DB, error) {
 	}
 
 	c.Db = db
+
+	err = db.AutoMigrate(&domain.User{})
+	if err != nil {
+		log.Fatal("Falha ao rodar migrations:", err)
+	}
 
 	return db, nil
 }
