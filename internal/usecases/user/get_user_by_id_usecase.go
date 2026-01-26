@@ -25,7 +25,7 @@ func (g *GetUserByIdUseCase) Execute(id uuid.UUID) (*domain.User, error) {
 		return nil, err
 	}
 
-	if user == nil {
+	if !user.Status {
 		return nil, fmt.Errorf("User not founded")
 	}
 
