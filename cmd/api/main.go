@@ -26,7 +26,11 @@ func main() {
 
 	handlers.RegisterRoutes(server, dbC.Db, jwtSvc)
 
-	server.Run(":8080")
+	port := os.Getenv("SERVER_PORT")
+	if port == "" {
+		port = "8080"
+	}
+	server.Run(":" + port)
 }
 
 func loadJwtService() {
