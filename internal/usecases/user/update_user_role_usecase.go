@@ -1,0 +1,49 @@
+package user
+
+import (
+	"fmt"
+	"rest-api/internal/domain"
+	userDto "rest-api/internal/dtos/user"
+	"rest-api/internal/infra/repositories"
+
+	"github.com/google/uuid"
+)
+
+type UpdateUserRoleUseCase struct {
+	UserRepository     repositories.UserRepository
+	GetUserByIdUseCase *GetUserByIdUseCase
+}
+
+func NewUpdateUserRoleUseCase(repository repositories.UserRepository, getUserByIdUseCase *GetUserByIdUseCase) *UpdateUserRoleUseCase {
+	return &UpdateUserRoleUseCase{
+		UserRepository:     repository,
+		GetUserByIdUseCase: getUserByIdUseCase,
+	}
+}
+
+func (u *UpdateUserRoleUseCase) Execute(input userDto.UpdateUserRoleRequest, userId uuid.UUID) error {
+	if _, err := u.GetUserByIdUseCase.Execute(userId); err != nil {
+		return err
+	}
+
+	if err := u.validateInput(input); err != nil {
+		return err
+	}
+
+	if err := u.UserRepository.UpdateUserRole(userId, input.Role); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *UpdateUserRoleUseCase) validateInput(input userDto.UpdateUserRoleRequest) error {
+	inputRole := input.Role
+
+	switch domain.UserRole(inputRole) {
+	case domain.ADMIN, domain.GUEST:
+		return nil
+	default:
+		return fmt.Errorf("Role %v is a invalid role", inputRole)
+	}
+}

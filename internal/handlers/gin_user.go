@@ -8,21 +8,56 @@ import (
 
 	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type GinUserHandler struct {
-	CreateUserUseCase  *userUseCase.CreateUserUseCase
-	GetAllUsersUseCase *userUseCase.GetAllUsersUseCase
+	CreateUserUseCase     *userUseCase.CreateUserUseCase
+	GetAllUsersUseCase    *userUseCase.GetAllUsersUseCase
+	UpdateUserRoleUseCase *userUseCase.UpdateUserRoleUseCase
 }
 
 func NewGinUserHandler(
 	createUserUseCase *userUseCase.CreateUserUseCase,
 	getAllUsersUseCase *userUseCase.GetAllUsersUseCase,
+	updateUserRoleUseCase *userUseCase.UpdateUserRoleUseCase,
 ) *GinUserHandler {
 	return &GinUserHandler{
-		CreateUserUseCase:  createUserUseCase,
-		GetAllUsersUseCase: getAllUsersUseCase,
+		CreateUserUseCase:     createUserUseCase,
+		GetAllUsersUseCase:    getAllUsersUseCase,
+		UpdateUserRoleUseCase: updateUserRoleUseCase,
 	}
+}
+
+func (h *GinUserHandler) UpdateUserRole(ctx *gin.Context) {
+	var request user.UpdateUserRoleRequest
+
+	if err := ctx.BindJSON(&request); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	valid, err := govalidator.ValidateStruct(request)
+	if !valid || err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	idStr := ctx.Param("id")
+	userId, err := uuid.Parse(idStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id format"})
+		return
+	}
+
+	err = h.UpdateUserRoleUseCase.Execute(request, userId)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusNoContent, nil)
 }
 
 func (h *GinUserHandler) CreateUser(ctx *gin.Context) {

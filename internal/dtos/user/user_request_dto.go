@@ -5,3 +5,7 @@ type CreateUserRequest struct {
 	Email    string `valid:"required,email"`
 	Password string `valid:"required,length(6|125)"`
 }
+
+type UpdateUserRoleRequest struct {
+	Role string `json:"role" valid:",length(0|5)"`
+}

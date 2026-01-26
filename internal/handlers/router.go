@@ -17,10 +17,12 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, jwt *services.JwtService) {
 	// Use Cases
 	createUserUC := user.NewCreateUserUseCase(userRepo)
 	getAllUsersUC := user.NewGetAllUsersUseCase(userRepo)
+	getUserUC := user.NewGetUserByIdUseCase(userRepo)
+	updateUserRoleUC := user.NewUpdateUserRoleUseCase(userRepo, getUserUC)
 	loginUC := auth.NewLoginUseCase(userRepo, jwt)
 
 	// Handlers
-	userHandler := NewGinUserHandler(createUserUC, getAllUsersUC)
+	userHandler := NewGinUserHandler(createUserUC, getAllUsersUC, updateUserRoleUC)
 	authHandler := NewGinAuth(loginUC)
 
 	api := r.Group("/api/v1")
@@ -31,6 +33,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, jwt *services.JwtService) {
 		{
 			users.POST("/", userHandler.CreateUser)
 			users.GET("/", userHandler.GetAllUsers)
+			users.PATCH("/:id/role", userHandler.UpdateUserRole)
 		}
 	}
 }

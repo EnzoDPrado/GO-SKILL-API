@@ -9,8 +9,10 @@ import (
 type UserRepository interface {
 	GetAll() ([]*domain.User, error)
 	GetByEmail(email string) (*domain.User, error)
+	GetById(id [16]byte) (*domain.User, error)
 	Add(newUser *domain.User) (*domain.User, error)
 	ExistsByEmail(email string) (bool, error)
+	UpdateUserRole(userId [16]byte, role string) error
 }
 
 type UserRepositoryDb struct {
@@ -31,6 +33,28 @@ func (ur *UserRepositoryDb) GetAll() ([]*domain.User, error) {
 	}
 
 	return users, nil
+}
+
+func (ur *UserRepositoryDb) UpdateUserRole(userId [16]byte, role string) error {
+	result := ur.Db.Model(&domain.User{}).Where("id = ?", userId).Update("role", role)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (ur *UserRepositoryDb) GetById(id [16]byte) (*domain.User, error) {
+	var user *domain.User
+
+	result := ur.Db.Where("id = ?", id).Find(&user)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return user, nil
 }
 
 func (ur *UserRepositoryDb) GetByEmail(email string) (*domain.User, error) {
