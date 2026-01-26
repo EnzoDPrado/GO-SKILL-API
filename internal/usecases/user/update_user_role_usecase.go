@@ -40,10 +40,9 @@ func (u *UpdateUserRoleUseCase) Execute(input userDto.UpdateUserRoleRequest, use
 func (u *UpdateUserRoleUseCase) validateInput(input userDto.UpdateUserRoleRequest) error {
 	inputRole := input.Role
 
-	switch domain.UserRole(inputRole) {
-	case domain.ADMIN, domain.GUEST:
-		return nil
-	default:
+	if _, err := domain.CastUserRole(inputRole); err != nil {
 		return fmt.Errorf("Role %v is a invalid role", inputRole)
 	}
+
+	return nil
 }

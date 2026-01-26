@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"rest-api/internal/domain"
+	"rest-api/internal/handlers/middlewares"
 	"rest-api/internal/infra/repositories"
 	"rest-api/internal/infra/services"
 	"rest-api/internal/usecases/auth"
@@ -33,7 +35,11 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, jwt *services.JwtService) {
 		{
 			users.POST("/", userHandler.CreateUser)
 			users.GET("/", userHandler.GetAllUsers)
-			users.PATCH("/:id/role", userHandler.UpdateUserRole)
+			users.PATCH("/:id/role",
+				middlewares.AuthMiddleware(jwt),
+				middlewares.RoleMiddleware(domain.ADMIN),
+				userHandler.UpdateUserRole,
+			)
 		}
 	}
 }

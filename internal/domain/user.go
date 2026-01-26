@@ -14,6 +14,7 @@ type UserRole string
 const (
 	GUEST UserRole = "guest"
 	ADMIN UserRole = "admin"
+	ERROR UserRole = "ERROR"
 )
 
 type User struct {
@@ -23,6 +24,17 @@ type User struct {
 	Password string    `valid:"required,length(6|125)" gorm:"not null"`
 	Status   bool      `valid:"required" gorm:"not null"`
 	Role     UserRole  `valid:"required,length(0|55)" gorm:"not null"`
+}
+
+func CastUserRole(role string) (UserRole, error) {
+	switch UserRole(role) {
+	case GUEST:
+		return GUEST, nil
+	case ADMIN:
+		return ADMIN, nil
+	default:
+		return ERROR, fmt.Errorf("Error casting user role")
+	}
 }
 
 func NewUser(name string, email string, password string) (*User, error) {

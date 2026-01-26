@@ -13,6 +13,11 @@ type JwtService struct {
 	secretKey []byte
 }
 
+type JwtData struct {
+	UserId   [16]byte
+	UserRole domain.UserRole
+}
+
 func NewJwtService(secret string) *JwtService {
 	return &JwtService{
 		secretKey: []byte(secret),
@@ -22,6 +27,7 @@ func NewJwtService(secret string) *JwtService {
 func (j *JwtService) GenerateCode(user domain.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"userID": user.ID,
+		"role":   user.Role,
 		"ttl":    time.Now().Add(time.Hour * 24 * 100).Unix(),
 	})
 
@@ -34,7 +40,7 @@ func (j *JwtService) GenerateCode(user domain.User) (string, error) {
 	return tokenString, err
 }
 
-func (j *JwtService) ValidateCode(tokenStr string) (uuid.UUID, error) {
+func (j *JwtService) ValidateCode(tokenStr string) (JwtData, error) {
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
@@ -44,28 +50,39 @@ func (j *JwtService) ValidateCode(tokenStr string) (uuid.UUID, error) {
 	})
 
 	if err != nil {
-		return uuid.Nil, err
+		return JwtData{}, err
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 
 	if !ok || !token.Valid {
-		return uuid.Nil, fmt.Errorf("Error getting JWT")
+		return JwtData{}, fmt.Errorf("Error getting JWT")
 	}
 
 	if claims["ttl"].(float64) < float64(time.Now().Unix()) {
-		return uuid.Nil, fmt.Errorf("Expired token")
+		return JwtData{}, fmt.Errorf("Expired token")
 	}
 
 	idStr, ok := claims["userID"].(string)
 	if !ok {
-		return uuid.Nil, fmt.Errorf("userID claim is not a string")
+		return JwtData{}, fmt.Errorf("userID claim is not a string")
 	}
 
 	userID, err := uuid.Parse(idStr)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("invalid uuid format in token: %w", err)
+		return JwtData{}, fmt.Errorf("invalid uuid format in token: %w", err)
 	}
 
-	return userID, nil
+	role, ok := claims["role"].(string)
+	if !ok {
+		return JwtData{}, fmt.Errorf("User role is not a string")
+	}
+
+	userRole, err := domain.CastUserRole(role)
+
+	if err != nil {
+		return JwtData{}, fmt.Errorf("Error casting user role")
+	}
+
+	return JwtData{UserId: userID, UserRole: userRole}, nil
 }
