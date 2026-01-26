@@ -10,6 +10,7 @@ type UserRepository interface {
 	GetAll() ([]*domain.User, error)
 	GetByEmail(email string) (*domain.User, error)
 	GetById(id [16]byte) (*domain.User, error)
+	DeleteById(id [16]byte) error
 	Add(newUser *domain.User) (*domain.User, error)
 	ExistsByEmail(email string) (bool, error)
 	UpdateUserRole(userId [16]byte, role string) error
@@ -35,8 +36,24 @@ func (ur *UserRepositoryDb) GetAll() ([]*domain.User, error) {
 	return users, nil
 }
 
+func (ur *UserRepositoryDb) DeleteById(userId [16]byte) error {
+	result := ur.Db.Model(&domain.User{}).
+		Where("id = ?", userId).
+		Where("status = ?", true).
+		Update("status", false)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
 func (ur *UserRepositoryDb) UpdateUserRole(userId [16]byte, role string) error {
-	result := ur.Db.Model(&domain.User{}).Where("id = ?", userId).Update("role", role)
+	result := ur.Db.Model(&domain.User{}).
+		Where("id = ?", userId).
+		Where("status = ?", true).
+		Update("role", role)
 
 	if result.Error != nil {
 		return result.Error
@@ -48,7 +65,10 @@ func (ur *UserRepositoryDb) UpdateUserRole(userId [16]byte, role string) error {
 func (ur *UserRepositoryDb) GetById(id [16]byte) (*domain.User, error) {
 	var user *domain.User
 
-	result := ur.Db.Where("id = ?", id).Find(&user)
+	result := ur.Db.
+		Where("id = ?", id).
+		Where("status = ?", true).
+		Find(&user)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -60,7 +80,10 @@ func (ur *UserRepositoryDb) GetById(id [16]byte) (*domain.User, error) {
 func (ur *UserRepositoryDb) GetByEmail(email string) (*domain.User, error) {
 	var user *domain.User
 
-	result := ur.Db.Where("email = ?", email).Find(&user)
+	result := ur.Db.
+		Where("email = ?", email).
+		Where("status = ?", true).
+		Find(&user)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -72,7 +95,10 @@ func (ur *UserRepositoryDb) GetByEmail(email string) (*domain.User, error) {
 func (ur *UserRepositoryDb) ExistsByEmail(email string) (bool, error) {
 	var userQuantity int64
 
-	result := ur.Db.Table("users").Where("email = ?", email).Count(&userQuantity)
+	result := ur.Db.Model(&domain.User{}).
+		Where("email = ?", email).
+		Where("status = ?", true).
+		Count(&userQuantity)
 
 	if result.Error != nil {
 		return false, result.Error

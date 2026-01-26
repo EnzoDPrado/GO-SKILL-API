@@ -21,10 +21,11 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, jwt *services.JwtService) {
 	getAllUsersUC := user.NewGetAllUsersUseCase(userRepo)
 	getUserUC := user.NewGetUserByIdUseCase(userRepo)
 	updateUserRoleUC := user.NewUpdateUserRoleUseCase(userRepo, getUserUC)
+	deleteUserUC := user.NewDeleteUserByIdUseCase(userRepo, getUserUC)
 	loginUC := auth.NewLoginUseCase(userRepo, jwt)
 
 	// Handlers
-	userHandler := NewGinUserHandler(createUserUC, getAllUsersUC, updateUserRoleUC)
+	userHandler := NewGinUserHandler(createUserUC, getAllUsersUC, updateUserRoleUC, deleteUserUC)
 	authHandler := NewGinAuth(loginUC)
 
 	api := r.Group("/api/v1")
@@ -33,12 +34,17 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, jwt *services.JwtService) {
 
 		users := api.Group("/users")
 		{
-			users.POST("/", userHandler.CreateUser)
-			users.GET("/", userHandler.GetAllUsers)
+			users.POST("", userHandler.CreateUser)
+			users.GET("", userHandler.GetAllUsers)
 			users.PATCH("/:id/role",
 				middlewares.AuthMiddleware(jwt),
 				middlewares.RoleMiddleware(domain.ADMIN),
 				userHandler.UpdateUserRole,
+			)
+			users.DELETE("/:id",
+				middlewares.AuthMiddleware(jwt),
+				middlewares.RoleMiddleware(domain.ADMIN),
+				userHandler.DeleteUserById,
 			)
 		}
 	}
