@@ -11,10 +11,10 @@ import (
 
 type UpdateUserRoleUseCase struct {
 	UserRepository     repositories.UserRepository
-	GetUserByIdUseCase *GetUserByIdUseCase
+	GetUserByIdUseCase domain.GetUserByIdProvider
 }
 
-func NewUpdateUserRoleUseCase(repository repositories.UserRepository, getUserByIdUseCase *GetUserByIdUseCase) *UpdateUserRoleUseCase {
+func NewUpdateUserRoleUseCase(repository repositories.UserRepository, getUserByIdUseCase domain.GetUserByIdProvider) *UpdateUserRoleUseCase {
 	return &UpdateUserRoleUseCase{
 		UserRepository:     repository,
 		GetUserByIdUseCase: getUserByIdUseCase,

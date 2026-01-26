@@ -10,10 +10,10 @@ import (
 
 type DeleteUserByIdUseCase struct {
 	UserRepository     repositories.UserRepository
-	GetUserByIdUseCase *GetUserByIdUseCase
+	GetUserByIdUseCase domain.GetUserByIdProvider
 }
 
-func NewDeleteUserByIdUseCase(repository repositories.UserRepository, getUserByIdUseCase *GetUserByIdUseCase) *DeleteUserByIdUseCase {
+func NewDeleteUserByIdUseCase(repository repositories.UserRepository, getUserByIdUseCase domain.GetUserByIdProvider) *DeleteUserByIdUseCase {
 	return &DeleteUserByIdUseCase{
 		UserRepository:     repository,
 		GetUserByIdUseCase: getUserByIdUseCase,
